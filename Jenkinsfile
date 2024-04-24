@@ -3,12 +3,12 @@ pipeline {
     stages {
         stage('Fetch code') {
             steps {
-                git branch: 'main', url:
+                git branch: 'main', url: 'https://github.com/FFSiyam/practice-project.git'
             }
         }
         stage('dependencies install') {
             steps {
-                sh 'npm install'
+                sh 'sudo npm install'
             }
         }
         stage('Build') {
@@ -16,5 +16,12 @@ pipeline {
                 sh 'npm run build'
             }
         }
+        stage('docker file build') {
+            steps {
+                sh 'sudo docker build -t siyamapp .'
+            }
+    }
+        
+
     }
 }
