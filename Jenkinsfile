@@ -1,8 +1,9 @@
 pipeline {
     agent any
-    // environment{
-    //     DOCKERHUB_CREDENTIALS = credentials('docker-token')
-    // }
+    environment {
+        registry = 'siyam05/siyamapp'
+        registryCredential = 'docker-token'
+    }
     stages {
         stage('Fetch code') {
             steps {
@@ -19,22 +20,53 @@ pipeline {
                 sh 'npm run build'
             }
         }
-        stage('docker file build') {
+      
+//using the plugin
+
+        stage('build the image') {
             steps {
-                sh 'sudo docker build -t siyamapp:1.0 .'
+                script {
+                    dockerImage = docker.build registry + ":v$BUILD_NUMBER"
+                }
             }
-        }
-        stage('push') {
-            steps{
-                withCredentials([usernamePassword(credentialsId: 'docker-token', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
-                    sh 'sudo docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD'
-                    sh 'sudo docker tag siyamapp:1.0 siyam05/siyamapp:1.0'
-                    sh 'sudo docker push siyam05/siyamapp:1.0'
-                    sh 'sudo docker logout'
-            }
-            
         }
 
-    }
+        stage("upload image") {
+            steps {
+                script {
+                    docker.withRegistry('', registryCredential) {
+                        dockerImage.push("v$BUILD_NUMBER")
+                        dockerImage.push("latest")
+                    }
+                }
+            }
+        }
+
+        stage("remove unused image") {
+            steps {
+                sh "docker rmi $registry:v$BUILD_NUMBER"
+            }
+        }
+
+ //Anothe Way of uploading
+
+   // stage('docker file build') {
+        //     steps {
+        //         sh 'sudo docker build -t siyamapp:1.0 .'
+        //     }
+        // }
+
+    //     stage('push') {
+    //         steps{
+    //             withCredentials([usernamePassword(credentialsId: 'docker-token', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
+    //                 sh 'sudo docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD'
+    //                 sh 'sudo docker tag siyamapp:1.0 siyam05/siyamapp:1.0'
+    //                 sh 'sudo docker push siyam05/siyamapp:1.0'
+    //                 sh 'sudo docker logout'
+    //         }
+            
+    //     }
+
+    // }
 }
 }
