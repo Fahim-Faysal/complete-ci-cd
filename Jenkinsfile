@@ -51,12 +51,19 @@ pipeline {
               sh 'docker push ${IMAGE_NAME}:v$BUILD_NUMBER'
               sh 'docker logout https://"${REPO_LOCATION}"-docker.pkg.dev'
             }
-            sh 'docker rmi ${IMAGE_NAME}:v$BUILD_NUMBER'
+            //sh 'docker rmi ${IMAGE_NAME}:v$BUILD_NUMBER'
             echo 'Build docker image Finish'
           }
         
       }
+
+    stage('cloud run') {
+        steps{
+            sh "gcloud run deploy jenkins --image '$registry'/'$APP_NAME':v'$BUILD_NUMBER' --region us-central1"
+        }
     }
+    
+}
      
     
 }
