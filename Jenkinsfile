@@ -62,6 +62,15 @@ pipeline {
             sh "gcloud run deploy jenkins --image '$registry'/'$APP_NAME':v'$BUILD_NUMBER' --region us-central1"
         }
     }
+    stage('invoker') {
+        steps{
+            sh "gcloud run services add-iam-policy-binding jenkins \
+                --member='serviceAccount:jenkinspipeline@sanbox-credit.iam.gserviceaccount.com' \
+                --region='us-central1' \
+                --member='allUsers' \
+                --role='roles/run.invoker'" 
+        }
+    }
     
 }
      
